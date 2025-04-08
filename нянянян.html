@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Концентрационные лагеря</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        body {
+            background-color: #fff;
+            color: #333;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+        }
+
+        h1 {
+            font-family: 'Georgia', serif;
+            text-align: center;
+            padding: 20px 0;
+            background-color: #f0f0f0;
+            margin-bottom: 10px;
+        }
+
+        #map {
+            height: 600px;
+            width: 100%;
+            border: 2px solid black;
+        }
+
+        .leaflet-tile {
+            clip-path: url(#eurasia-clip);
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <h1>Концентрационные лагеря</h1>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+
+        var map = L.map('map').setView([50, 40], 3);
+
+        // Прозрачный слой
+        L.tileLayer('', {
+            attribution: '',
+        }).addTo(map);
+
+        // Загружаем GeoJSON Евразии (замените на ваш URL или данные)
+        fetch('eurasia.geojson')
+            .then(response => response.json())
+            .then(geojsonData => {
+                L.geoJson(geojsonData, {
+                    style: {
+                        color: "black",
+                        weight: 1,
+                        fillColor: "lightgray"
+                    }
+                }).addTo(map);
+
+                // Создаем SVG clipPath
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                const clipPath = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
+                clipPath.setAttribute("id", "eurasia-clip");
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const svgPathData = L.SVG.pointsToPath(geojsonData.geometry.coordinates[0]); // Возможно, нужно изменить индексы
+                path.setAttribute("d", svgPathData);
+                clipPath.appendChild(path);
+                svg.appendChild(clipPath);
+                document.body.appendChild(svg);
+            });
+
+
+        const camps = [
+            { name: "Освенцим", lat: 50.0267, lng: 19.1779, link: "osvencim.html" },
+            { name: "Нацвейлер-Штрутгоф", lat: 48.69, lng: 7.15, link: "natzweiler.html" },
+            { name: "Штуттгоф", lat: 54.3333, lng: 18.85, link: "stutthof.html" },
+            { name: "Аушвиц-Биркенау", lat: 50.03, lng: 19.2, link: "auschwitz-birkenau.html" },
+            { name: "Варшавский концлагерь", lat: 52.26, lng: 21.01, link: "warsaw.html" }
+            // ... другие лагеря
+        ];
+
+        var redIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+
+        camps.forEach(camp => {
+           L.marker([camp.lat, camp.lng], {icon: redIcon})
+            .addTo(map)
+            .bindPopup(`<a href="${camp.link}">${camp.name}</a>`);
+        });
+
+
+
+
+    </script>
+
+</body>
+</html>
